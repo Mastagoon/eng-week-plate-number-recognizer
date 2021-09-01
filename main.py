@@ -3,6 +3,11 @@
 # image processing, recognition, whole logic, pygame display
 #
 ###Libraries##
+# LCD settings [Masta]
+from RPLCD import CharLCD
+lcd = CharLCD(cols=8, rows=2, pin_rs=37, pin_e=35, pins_data=[40, 38, 36, 32, 33, 31, 29, 23])
+lcd.write_string(u'Hello world!')
+
 import RPi.GPIO as GPIO
 import time
 from picamera import PiCamera
@@ -34,13 +39,13 @@ import subprocess
 # Set for broadcom numbering so that GPIO# can be used as reference
 GPIO.setmode(GPIO.BCM)  
 
-GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+# GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_UP) no longer needed [Masta]
+# GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 ##IR sersor signal input   
-# GPIO.setup(19, GPIO.IN) // we don't need those anymore [Masta]
-# GPIO.setup(26, GPIO.IN)
+# GPIO.setup(19, GPIO.IN) // we don't need this one anymore [Masta]
 
+GPIO.setup(26, GPIO.IN) # IR sensor
 # LEDs setup [Masta]
 GPIO.setup(19, GPIO.OUT, initial=GPIO.LOW) # liscenced LED
 GPIO.setup(20, GPIO.OUT, initial=GPIO.LOW) # stolen LED
@@ -294,27 +299,34 @@ def ledControl():
                 rect = text_surface.get_rect(center=(160,210))
                 screen.blit(text_surface, rect)
                 pygame.display.flip()#dispaly on actual screen 
+                lcd.write_string("Licensed")
                 GPIO.output(19, GPIO.HIGH)
                 sleep(5)
                 GPIO.output(19, GPIO.LOW)
+                lcd.write_string("Stand By")
             elif(text in stolenList):
                 display="STOLEN !!"
                 text_surface = my_font.render(display, True, WHITE)#display Left servo History coloum
                 rect = text_surface.get_rect(center=(160,210))
                 screen.blit(text_surface, rect)
                 pygame.display.flip()#dispaly on actual screen 
+                lcd.write_string("STOLEN!!")
                 GPIO.output(20, GPIO.HIGH)
                 sleep(5)
                 GPIO.output(20, GPIO.LOW)
+                lcd.write_string("Stand By")
             else:
                 display="Unlicensed !!"
                 text_surface = my_font.render(display, True, WHITE)#display Left servo History coloum
                 rect = text_surface.get_rect(center=(160,210))
                 screen.blit(text_surface, rect)
                 pygame.display.flip()#dispaly on actual screen 
+                lcd.write_string("Unlicensed !!")
                 GPIO.output(21, GPIO.HIGH)
                 sleep(5)
                 GPIO.output(21, GPIO.LOW)
+                lcd.write_string("Stand By")
+    flag=false
     except KeyboardInterrupt:
       pass
 
@@ -421,7 +433,7 @@ while flag:
     screen.blit(text_surface, rect)
     pygame.display.flip()#dispaly on actual screen 
 
-    # if ( not GPIO.input(19) ):#when button pressed pin connected to ground, GPIO.input(17)=0; removed by [Masta]
+    if ( GPIO.input(26) ):#when button pressed pin connected to ground, GPIO.input(17)=0; removed by [Masta]
     print (" ") 
     print ("Capturing...")
     imageCap()
